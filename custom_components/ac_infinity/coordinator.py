@@ -4,7 +4,6 @@ import asyncio
 import contextlib
 import logging
 
-import async_timeout
 from ac_infinity_ble.const import MANUFACTURER_ID
 from bleak.backends.device import BLEDevice
 from homeassistant.components import bluetooth
@@ -96,7 +95,7 @@ class ACInfinityDataUpdateCoordinator(ActiveBluetoothDataUpdateCoordinator[None]
     async def async_wait_ready(self) -> bool:
         """Wait for the device to be ready."""
         with contextlib.suppress(asyncio.TimeoutError):
-            async with async_timeout.timeout(DEVICE_STARTUP_TIMEOUT):
+            async with asyncio.timeout(DEVICE_STARTUP_TIMEOUT):
                 await self._device_ready.wait()
                 return True
         return False

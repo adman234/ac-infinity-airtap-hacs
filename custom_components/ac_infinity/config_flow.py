@@ -91,6 +91,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 if (
                     discovery.address in current_addresses
                     or discovery.address in self._discovered_devices
+                    or MANUFACTURER_ID not in discovery.advertisement.manufacturer_data
                 ):
                     continue
                 self._discovered_devices[discovery.address] = discovery
@@ -102,6 +103,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         devices = {}
         for service_info in self._discovered_devices.values():
+            if MANUFACTURER_ID not in service_info.advertisement.manufacturer_data:
+                continue
             device = parse_manufacturer_data(
                 service_info.advertisement.manufacturer_data[MANUFACTURER_ID]
             )
