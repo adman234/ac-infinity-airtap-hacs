@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import dataclasses
 import logging
 from dataclasses import dataclass
@@ -11,12 +12,17 @@ from ac_infinity_ble.protocol import parse_manufacturer_data
 from ac_infinity_ble.util import get_bit
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
+from bleak.exc import BleakDBusError
+from bleak_retry_connector import BleakError, retry_bluetooth_connection_error
 
 from .const import FAMILY_E_MODELS
 
 WORK_TYPE_OFF = 1
 WORK_TYPE_ON = 2
 WORK_TYPE_AUTO = 3
+
+_BLEAK_BACKOFF_TIME = 0.25
+_DEFAULT_ATTEMPTS = 3
 
 _LOGGER = logging.getLogger(ACInfinityController.__module__)
 _MIN_SECONDS_BETWEEN_POLLS = 30
@@ -60,6 +66,28 @@ class ACInfinityDevice(ACInfinityController):
 
         if self._state is DeviceInfo:
             self._state = DeviceInfoEx(**self._state.__dict__)
+
+    @retry_bluetooth_connection_error(_DEFAULT_ATTEMPTS)
+    async def _send_command_locked(self, command: bytes) -> bytes | None:
+        # The base class retry decorator calls this directly on retry without
+        # reconnecting first, so _client can be None. Re-ensure connection here.
+        await self._ensure_connected()
+        try:
+            return await self._execute_command_locked(command)
+        except BleakDBusError as ex:
+            await asyncio.sleep(_BLEAK_BACKOFF_TIME)
+            _LOGGER.debug(
+                "%s: RSSI: %s; Backing off %ss; Disconnecting due to error: %s",
+                self.name, self.rssi, _BLEAK_BACKOFF_TIME, ex,
+            )
+            await self._execute_disconnect()
+            raise
+        except BleakError as ex:
+            _LOGGER.debug(
+                "%s: RSSI: %s; Disconnecting due to error: %s", self.name, self.rssi, ex
+            )
+            await self._execute_disconnect()
+            raise
 
     def set_ble_device_and_advertisement_data(
         self, ble_device: BLEDevice, advertisement_data: AdvertisementData
