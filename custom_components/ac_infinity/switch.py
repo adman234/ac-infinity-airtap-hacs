@@ -28,14 +28,14 @@ async def async_setup_entry(
     entities: list[ACInfinitySwitch] = [
         ACInfinitySwitch(data.coordinator,
                          data.device,
-                         "Auto Mode High Temperature Trigger",
+                         "Heat",
                          lambda d: None if d.auto_mode is None else d.auto_mode.high_temp_enabled,
-                         ACInfinityDevice.async_set_auto_mode_high_temp_enabled),
+                         ACInfinityDevice.async_set_heat_mode),
         ACInfinitySwitch(data.coordinator,
                          data.device,
-                         "Auto Mode Low Temperature Trigger",
+                         "Cool",
                          lambda d: None if d.auto_mode is None else d.auto_mode.low_temp_enabled,
-                         ACInfinityDevice.async_set_auto_mode_low_temp_enabled),
+                         ACInfinityDevice.async_set_cool_mode),
     ]
 
     async_add_entities(entities)

@@ -223,6 +223,26 @@ class ACInfinityDevice(ACInfinityController):
         new_config = dataclasses.replace(self.auto_mode, low_temp_enabled=enabled)
         await self.async_set_auto_mode_config(new_config)
 
+    async def async_set_heat_mode(self, enabled: bool) -> None:
+        if self.auto_mode is None:
+            raise ValueError("Auto mode configuration is not loaded; cannot change configuration values")
+
+        if enabled:
+            new_config = dataclasses.replace(self.auto_mode, high_temp_enabled=True, low_temp_enabled=False)
+        else:
+            new_config = dataclasses.replace(self.auto_mode, high_temp_enabled=False)
+        await self.async_set_auto_mode_config(new_config)
+
+    async def async_set_cool_mode(self, enabled: bool) -> None:
+        if self.auto_mode is None:
+            raise ValueError("Auto mode configuration is not loaded; cannot change configuration values")
+
+        if enabled:
+            new_config = dataclasses.replace(self.auto_mode, high_temp_enabled=False, low_temp_enabled=True)
+        else:
+            new_config = dataclasses.replace(self.auto_mode, low_temp_enabled=False)
+        await self.async_set_auto_mode_config(new_config)
+
     async def async_set_auto_mode_config(self, config: AutoModeConfig) -> None:
         if config is None:
             raise ValueError("config cannot be None")
