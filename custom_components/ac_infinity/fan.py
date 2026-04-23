@@ -70,8 +70,9 @@ class ACInfinityFan(
         speed = 0
         if percentage > 0:
             speed = math.ceil(percentage_to_ranged_value(SPEED_RANGE, percentage))
-
         await self._device.set_speed(speed)
+        self._update_attrs()
+        self.async_write_ha_state()
 
     async def async_turn_on(
         self,
@@ -86,15 +87,21 @@ class ACInfinityFan(
         if percentage is not None:
             speed = math.ceil(percentage_to_ranged_value(SPEED_RANGE, percentage))
         await self._device.turn_on(speed)
+        self._update_attrs()
+        self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         await self._device.turn_off()
+        self._update_attrs()
+        self.async_write_ha_state()
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         if preset_mode == PRESET_AUTO_MODE:
             await self._device.set_mode_auto()
         else:
             raise ValueError(f"Unsupported preset mode: {preset_mode}")
+        self._update_attrs()
+        self.async_write_ha_state()
 
     @callback
     def _update_attrs(self) -> None:

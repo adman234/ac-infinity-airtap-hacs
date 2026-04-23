@@ -75,10 +75,14 @@ class ACInfinitySwitch(
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on switch."""
         await self._async_set_is_on(self._device, True)
+        self._update_attrs()
+        self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off switch."""
         await self._async_set_is_on(self._device, False)
+        self._update_attrs()
+        self.async_write_ha_state()
 
     @callback
     def _update_attrs(self) -> None:

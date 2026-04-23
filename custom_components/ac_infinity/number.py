@@ -115,6 +115,8 @@ class PercentageNumber(ACInfinityNumber):
 
     async def async_set_native_value(self, value: float) -> None:
         await self._async_set_value(self._device, math.ceil(percentage_to_ranged_value(SPEED_RANGE, value)))
+        self._update_attrs()
+        self.async_write_ha_state()
 
 
 class TemperatureNumber(ACInfinityNumber):
@@ -141,3 +143,5 @@ class TemperatureNumber(ACInfinityNumber):
 
     async def async_set_native_value(self, value: float) -> None:
         await self._async_set_value(self._device, value)
+        self._update_attrs()
+        self.async_write_ha_state()
