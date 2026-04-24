@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable
-from typing import Any, Optional
+from typing import Any
 
 from homeassistant.components.switch import SwitchDeviceClass, SwitchEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity import DeviceInfo
@@ -25,43 +23,24 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     data: ACInfinityData = hass.data[DOMAIN][entry.entry_id]
-    entities: list[ACInfinitySwitch] = [
-        ACInfinitySwitch(data.coordinator,
-                         data.device,
-                         "Heat",
-                         lambda d: None if d.auto_mode is None else d.auto_mode.high_temp_enabled,
-                         ACInfinityDevice.async_set_heat_mode),
-        ACInfinitySwitch(data.coordinator,
-                         data.device,
-                         "Cool",
-                         lambda d: None if d.auto_mode is None else d.auto_mode.low_temp_enabled,
-                         ACInfinityDevice.async_set_cool_mode),
-    ]
-
-    async_add_entities(entities)
+    async_add_entities([ACInfinityPowerSwitch(data.coordinator, data.device)])
 
 
-class ACInfinitySwitch(
+class ACInfinityPowerSwitch(
     ActiveBluetoothCoordinatorEntity[ACInfinityDataUpdateCoordinator], SwitchEntity
 ):
     _attr_device_class = SwitchDeviceClass.SWITCH
-    _attr_entity_category = (
-        EntityCategory.CONFIG
-    )
     _attr_has_entity_name = True
+    _attr_name = "Power"
 
     def __init__(
         self,
         coordinator: ACInfinityDataUpdateCoordinator,
         device: ACInfinityDevice,
-        name: str,
-        get_is_on: Callable[[ACInfinityDevice], Optional[bool]],
-        async_set_is_on: Callable[[ACInfinityDevice, bool], Awaitable[None]],
     ) -> None:
         super().__init__(coordinator)
         self._device = device
-        self._attr_name = name
-        self._attr_unique_id = f"{self._device.address}_switch_{slugify(name)}"
+        self._attr_unique_id = f"{self._device.address}_power"
         self._attr_device_info = DeviceInfo(
             name=device.name,
             model=DEVICE_MODEL[device.state.type],
@@ -69,27 +48,22 @@ class ACInfinitySwitch(
             sw_version=device.state.version,
             connections={(dr.CONNECTION_BLUETOOTH, device.address)},
         )
-        self._get_is_on = get_is_on
-        self._async_set_is_on = async_set_is_on
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        """Turn on switch."""
-        await self._async_set_is_on(self._device, True)
+        await self._device.turn_on()
         self._update_attrs()
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn off switch."""
-        await self._async_set_is_on(self._device, False)
+        await self._device.turn_off()
         self._update_attrs()
         self.async_write_ha_state()
 
     @callback
     def _update_attrs(self) -> None:
-        self._attr_is_on = self._get_is_on(self._device)
+        self._attr_is_on = self._device.is_on
 
     @callback
     def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
         self._update_attrs()
         super()._handle_coordinator_update()
