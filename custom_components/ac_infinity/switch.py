@@ -51,6 +51,8 @@ class ACInfinityPowerSwitch(
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         await self._device.turn_on()
+        if (speed := self._device.speed_setting) is not None:
+            await self._device.async_set_speed(speed)
         self._update_attrs()
         self.async_write_ha_state()
 

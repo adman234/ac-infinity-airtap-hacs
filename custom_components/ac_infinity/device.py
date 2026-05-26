@@ -78,9 +78,11 @@ class ACInfinityDevice(ACInfinityController):
         info = parse_manufacturer_data(
             advertisement_data.manufacturer_data[MANUFACTURER_ID]
         )
-        self._state = dataclasses.replace(
-            self._state, **{k: v for k, v in dataclasses.asdict(info).items() if v is not None}
-        )
+        # level_off/level_on are config values we set explicitly; advertisements
+        # broadcast device defaults (often 10) after power-up and must not overwrite them.
+        update = {k: v for k, v in dataclasses.asdict(info).items()
+                  if v is not None and k not in ('level_off', 'level_on')}
+        self._state = dataclasses.replace(self._state, **update)
         self._fire_callbacks(CallbackType.ADVERTISEMENT)
 
     @property
