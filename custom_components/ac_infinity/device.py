@@ -45,7 +45,7 @@ class ACInfinityDevice(ACInfinityController):
             advertisement_data=advertisement_data,
         )
 
-        if self._state is DeviceInfo:
+        if type(self._state) is DeviceInfo:
             self._state = DeviceInfoEx(**self._state.__dict__)
 
     @retry_bluetooth_connection_error(_DEFAULT_ATTEMPTS)
