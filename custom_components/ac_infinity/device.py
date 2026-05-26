@@ -100,11 +100,7 @@ class ACInfinityDevice(ACInfinityController):
         return self._state.vpd
 
     @property
-    def min_speed(self) -> Optional[int]:
-        return self._state.level_off
-
-    @property
-    def max_speed(self) -> Optional[int]:
+    def speed_setting(self) -> Optional[int]:
         return self._state.level_on
 
     @property
@@ -141,39 +137,25 @@ class ACInfinityDevice(ACInfinityController):
         else:
             await self.turn_off()
 
-    async def async_set_min_speed(self, value: int) -> None:
-        if value not in range(0, 11):
-            raise ValueError("value must be between 0 and 10")
+    async def async_set_speed(self, value: int) -> None:
+        if value not in range(1, 11):
+            raise ValueError("value must be between 1 and 10")
 
-        _LOGGER.debug("%s: Setting min speed to %s", self.name, value)
+        _LOGGER.debug("%s: Setting speed to %s", self.name, value)
 
-        command = [17, 1, value]
+        min_cmd = [17, 1, value]
+        max_cmd = [18, 1, value]
         if self.state.type in FAMILY_E_MODELS:
-            command += [255, 0]
-        command = self._protocol._add_head(command, 3, self.sequence)
+            min_cmd += [255, 0]
+            max_cmd += [255, 0]
+        min_cmd = self._protocol._add_head(min_cmd, 3, self.sequence)
+        max_cmd = self._protocol._add_head(max_cmd, 3, self.sequence)
 
         await self._ensure_connected()
         try:
-            await self._send_command(command)
+            await self._send_command(min_cmd)
+            await self._send_command(max_cmd)
             self.state.level_off = value
-            self._config_changed_since_last_update = True
-        finally:
-            await self._execute_disconnect()
-
-    async def async_set_max_speed(self, value: int) -> None:
-        if value not in range(0, 11):
-            raise ValueError("value must be between 0 and 10")
-
-        _LOGGER.debug("%s: Setting max speed to %s", self.name, value)
-
-        command = [18, 1, value]
-        if self.state.type in FAMILY_E_MODELS:
-            command += [255, 0]
-        command = self._protocol._add_head(command, 3, self.sequence)
-
-        await self._ensure_connected()
-        try:
-            await self._send_command(command)
             self.state.level_on = value
             self._config_changed_since_last_update = True
         finally:
