@@ -1,14 +1,10 @@
-# ac-infinity-airtap-hacs
+# AC Infinity Airtap — Home Assistant Integration
 
 Home Assistant custom integration for Bluetooth Low Energy (BLE) control of [AC Infinity Airtap](https://acinfinity.com/register-booster-fans/) series register fans.
 
-Uses [ac-infinity-ble](https://github.com/hunterjm/ac-infinity-ble/) library.
-
 ## Troubleshooting
 
-### Debug Logging
-
-To enbale debug logging, configure the your [loggers](https://www.home-assistant.io/integrations/logger/) as follows:
+To enable debug logging, add the following to your [logger config](https://www.home-assistant.io/integrations/logger/):
 
 ```yaml
 logger:
@@ -18,6 +14,6 @@ logger:
     custom_components.ac_infinity: debug
 ```
 
-## Credit
+## Credits
 
-This project builds on work by Jason Hunter: [hunterjm/ac-infinity-hacs](https://github.com/hunterjm/ac-infinity-hacs).
+Built on work by [mtsphere](https://github.com/mtsphere/ac-infinity-airtap-hacs) and originally [Jason Hunter (hunterjm)](https://github.com/hunterjm/ac-infinity-hacs). Uses the [ac-infinity-ble](https://github.com/hunterjm/ac-infinity-ble/) library.
