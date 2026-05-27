@@ -4,9 +4,6 @@ DOMAIN = "ac_infinity"
 
 MANUFACTURER = "AC Infinity"
 
-DEVICE_TIMEOUT = 30
-UPDATE_SECONDS = 15
-
 BLEAK_EXCEPTIONS = (AttributeError, BleakError, TimeoutError)
 
 DEVICE_MODEL = {1: "Controller 67",

@@ -20,7 +20,7 @@ _BLEAK_BACKOFF_TIME = 0.25
 _DEFAULT_ATTEMPTS = 3
 
 _LOGGER = logging.getLogger(ACInfinityController.__module__)
-_MIN_SECONDS_BETWEEN_POLLS = 30
+_MIN_SECONDS_BETWEEN_POLLS = 10
 
 
 @dataclass
